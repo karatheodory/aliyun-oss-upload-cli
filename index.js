@@ -25,13 +25,18 @@ const ossStore = oss({
 });
 
 co(function*() {
-    return yield ossStore.put(
+    return yield ossStore.multipartUpload(
         keyName,
         filePath,
-        null
+        {
+            partSize: 10 * 1024 * 1024,
+            progress: function*(percent, checkpoint) {
+                console.log(Math.floor(percent) + '% (Part #' + checkpoint.doneParts.length + ')');
+            }
+        }
     )
 }).then(() => {
     console.log('Upload completed');
 }).catch((error) => {
-    console.log('Upload error.')
+    console.log('Upload error: ', error);
 });
